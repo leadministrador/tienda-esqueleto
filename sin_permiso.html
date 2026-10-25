@@ -1,0 +1,10 @@
+{% extends "base_admin.html" %}
+{% block titulo %}Sin permiso{% endblock %}
+{% block cuerpo %}
+<div class="solo card">
+  <h1>Tu cuenta todavía no tiene permiso</h1>
+  <p>Para cargar productos, pedile al dueño de la tienda que te habilite desde <b>Cuentas</b>.</p>
+  <p class="muted">Tu celular: {{ yo.celular }}</p>
+  <a class="btn lite" href="{{ url_for('salir') }}">Salir</a>
+</div>
+{% endblock %}

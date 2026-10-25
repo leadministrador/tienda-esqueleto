@@ -1,0 +1,32 @@
+{% extends "base_admin.html" %}
+{% block titulo %}Cuentas{% endblock %}
+{% block cuerpo %}
+<h1>Cuentas</h1>
+<p class="muted">Para sumar a alguien: que se cree una cuenta en <b>{{ url_for('registro', _external=True) }}</b> y después le das permiso acá.</p>
+<div class="card tabla">
+<table>
+  <thead><tr><th>Nombre</th><th>Celular</th><th>Permiso</th></tr></thead>
+  <tbody>
+  {% for u in lista %}
+  <tr>
+    <td>{{ u.nombre or '—' }}</td>
+    <td>{{ u.celular }}</td>
+    <td>
+      {% if u.rol == 'dueno' %}<span class="pill si">Dueño</span>
+      {% else %}
+      <form method="post" style="display:flex;gap:6px;align-items:center">
+        <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="uid" value="{{ u.id }}">
+        <select name="rol" aria-label="Permiso de {{ u.nombre or u.celular }}" style="width:auto">
+          <option value="cliente" {{ 'selected' if u.rol=='cliente' }}>Sin permiso</option>
+          <option value="ayudante" {{ 'selected' if u.rol=='ayudante' }}>Ayudante (carga productos)</option>
+        </select>
+        <button class="btn sm">Guardar</button>
+      </form>
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

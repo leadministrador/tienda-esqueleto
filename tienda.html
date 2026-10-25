@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{{ T.nombre }}</title>
+{% if logo %}<link rel="icon" href="{{ url_for('img', iid=logo, t='c') }}">{% endif %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&family=Figtree:wght@400;600;700&display=swap">
+<style>
+/* Tienda de una columna: barra fija, portada, catálogo en grilla, contacto. Carrito como panel lateral; ficha de producto en ventana. */
+:root{
+  --bg:#f2f3f7; --surface:#ffffff; --fg:#1c1f30; --muted:#5d6378; --line:#d9dce6;
+  --brand:{{ T.color_principal }}; --brand-ink:{{ T.color_principal|tinta }};
+  --acc:{{ T.color_acento }}; --acc-ink:{{ T.color_acento|tinta }}; --ok:#1f8a4c;
+  --display:"Oswald","Arial Narrow",sans-serif; --body:"Figtree",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12131c; --surface:#1c1e2b; --fg:#e8e9f0; --muted:#9a9fb3; --line:#2e3145; --ok:#4cc17e; color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#12131c; --surface:#1c1e2b; --fg:#e8e9f0; --muted:#9a9fb3; --line:#2e3145; --ok:#4cc17e; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--brand)}
+img{max-width:100%}
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--brand);color:var(--brand-ink)}
+header .wrap{display:flex;align-items:center;gap:16px;padding-block:12px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:22px;line-height:1;letter-spacing:.5px;text-transform:uppercase}
+.logo img{width:46px;height:46px;border-radius:50%;border:2px solid var(--brand-ink);object-fit:cover}
+.logo small{display:block;font-family:var(--body);font-size:11px;letter-spacing:2px;opacity:.8;margin-top:4px}
+nav{display:flex;gap:14px;flex-wrap:wrap;margin-left:auto}
+nav a{color:var(--brand-ink);text-decoration:none;font-weight:600;font-size:14px;opacity:.9}
+nav a:hover,nav a:focus-visible{opacity:1;text-decoration:underline}
+.cartbtn{background:var(--acc);color:var(--acc-ink);border:0;border-radius:999px;padding:8px 14px;font:700 14px var(--body);cursor:pointer}
+button:focus-visible,a:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.hero{background:var(--brand);color:var(--brand-ink);padding-block:28px 40px}
+.hero h1{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size:clamp(30px,6vw,52px);line-height:1.05;margin:0 0 10px;text-wrap:balance;max-width:18ch}
+.hero p{margin:0;max-width:52ch;opacity:.92}
+section{padding-block:32px}
+h2{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size:26px;margin:0 0 4px}
+.sub{color:var(--muted);margin:0 0 18px}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.chip{border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;padding:6px 14px;font:600 13px var(--body);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
+.ph{aspect-ratio:4/3;background:var(--bg);display:grid;place-items:center;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:1.5px;position:relative;border:0;padding:0;cursor:pointer;width:100%}
+.ph img{width:100%;height:100%;object-fit:cover;display:block}
+.ph .cat{position:absolute;top:8px;left:8px;background:var(--brand);color:var(--brand-ink);font-size:11px;padding:2px 8px;border-radius:4px;letter-spacing:1px}
+.ph .off{position:absolute;top:8px;right:8px;background:var(--acc);color:var(--acc-ink);font-weight:700;font-size:11px;padding:2px 8px;border-radius:4px}
+.ph .vid{position:absolute;bottom:8px;left:8px;background:rgba(0,0,0,.7);color:#fff;font-size:11px;padding:2px 8px;border-radius:4px}
+.body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:4px;flex:1}
+.body h3{margin:0;font-size:16px;line-height:1.25}
+.body h3 button{all:unset;cursor:pointer}
+.spec{color:var(--muted);font-size:13px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:8px}
+.price{font-weight:700;font-size:18px;font-variant-numeric:tabular-nums}
+.price s{color:var(--muted);font-weight:400;font-size:13px;margin-right:4px}
+.add{background:var(--brand);color:var(--brand-ink);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font:700 13px var(--body);cursor:pointer}
+.empty{color:var(--muted)}
+.contact{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.contact div{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;overflow-wrap:anywhere}
+.contact b{display:block;font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:4px}
+.contact a{color:inherit}
+footer{border-top:1px solid var(--line);color:var(--muted);font-size:13px;padding-block:20px}
+footer a{color:inherit}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(380px,100%);background:var(--surface);border-left:1px solid var(--line);z-index:20;display:flex;flex-direction:column;
+  padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) 16px;box-shadow:-8px 0 30px rgba(0,0,0,.18)}
+.drawer h2{display:flex;justify-content:space-between;align-items:center}
+.x{background:none;border:0;color:var(--fg);font-size:26px;cursor:pointer;line-height:1}
+.items{flex:1;overflow:auto;display:flex;flex-direction:column;gap:10px;margin-block:10px}
+.item{display:grid;grid-template-columns:1fr auto;gap:4px 10px;border-bottom:1px solid var(--line);padding-bottom:10px}
+.qty{display:flex;align-items:center;gap:6px}
+.qty button{width:30px;height:30px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer;font-weight:700}
+.total{display:flex;justify-content:space-between;font-weight:700;font-size:18px;font-variant-numeric:tabular-nums}
+.wa{display:block;text-align:center;background:var(--ok);color:#fff;text-decoration:none;font-weight:700;padding:12px;border-radius:10px;margin-top:10px}
+dialog{border:0;border-radius:14px;padding:0;width:min(760px,calc(100% - 24px));max-height:calc(100% - 24px);background:var(--surface);color:var(--fg)}
+dialog::backdrop{background:rgba(10,12,20,.6)}
+.ficha{display:flex;flex-direction:column}
+.ficha .top{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface);z-index:1}
+.ficha .top h3{margin:0;font-size:18px}
+.galeria{background:#000;aspect-ratio:4/3;display:grid;place-items:center}
+.galeria img{max-height:100%;max-width:100%;object-fit:contain}
+.miniaturas{display:flex;gap:6px;padding:8px 16px;overflow-x:auto}
+.miniaturas button{border:2px solid transparent;padding:0;border-radius:6px;overflow:hidden;cursor:pointer;flex:none;background:none}
+.miniaturas button[aria-current="true"]{border-color:var(--acc)}
+.miniaturas img{width:64px;height:64px;object-fit:cover;display:block}
+.ficha .info{padding:12px 16px 18px;display:flex;flex-direction:column;gap:10px}
+.ficha .desc{white-space:pre-wrap;margin:0}
+.video{position:relative;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:#000}
+.video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+@media (max-width:640px){nav{margin-left:0;width:100%;order:3;flex-wrap:nowrap;overflow-x:auto} header .wrap{gap:8px 12px;padding-block:8px} .cartbtn{margin-left:auto} nav a{white-space:nowrap}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="logo">{% if logo %}<img src="{{ url_for('img', iid=logo, t='c') }}" alt="">{% endif %}<span>{{ T.nombre }}<small>{{ T.subtitulo }}</small></span></div>
+  <nav aria-label="Secciones"><a href="#catalogo">Catálogo</a><a href="#contacto">Contacto</a></nav>
+  <button class="cartbtn" id="openCart" type="button">Carrito (<span id="count">0</span>)</button>
+</div></header>
+
+<div class="hero"><div class="wrap">
+  <h1>{{ T.portada_titulo }}</h1>
+  <p>{{ T.portada_texto }}</p>
+</div></div>
+
+<main>
+<section id="catalogo"><div class="wrap">
+  <h2>Catálogo</h2><p class="sub">Tocá un producto para ver fotos, video y detalles.</p>
+  <div class="filters" id="filters" role="group" aria-label="Categorías"></div>
+  <div class="grid" id="grid"></div>
+</div></section>
+
+<section id="contacto"><div class="wrap">
+  <h2>Contacto y redes</h2>
+  <div class="contact">
+    {% if T.whatsapp %}<div><b>WhatsApp</b><a href="https://wa.me/{{ T.whatsapp }}" target="_blank" rel="noopener">+{{ T.whatsapp }}</a></div>{% endif %}
+    {% if T.instagram %}<div><b>Instagram</b><a href="https://instagram.com/{{ T.instagram|replace('@','') }}" target="_blank" rel="noopener">{{ T.instagram }}</a></div>{% endif %}
+    {% if T.horario %}<div><b>Horario</b>{{ T.horario }}</div>{% endif %}
+    {% if T.direccion %}<div><b>Dirección</b>{{ T.direccion }}</div>{% endif %}
+  </div>
+</div></section>
+</main>
+
+<footer><div class="wrap">{{ T.nombre }} · <a href="{{ url_for('admin') }}">Panel</a></div></footer>
+
+<aside class="drawer" id="drawer" hidden aria-label="Carrito">
+  <h2>Tu pedido <button class="x" id="closeCart" type="button" aria-label="Cerrar carrito">×</button></h2>
+  <div class="items" id="items"></div>
+  <div class="total"><span>Total</span><span id="total">$0</span></div>
+  <a class="wa" id="waLink" href="#" target="_blank" rel="noopener" hidden>Pedir por WhatsApp</a>
+</aside>
+
+<dialog id="ficha" aria-labelledby="fNombre"><div class="ficha">
+  <div class="top"><h3 id="fNombre"></h3><button class="x" type="button" id="fCerrar" aria-label="Cerrar">×</button></div>
+  <div class="galeria" id="fGaleria"></div>
+  <div class="miniaturas" id="fMinis"></div>
+  <div class="info">
+    <div class="price" id="fPrecio"></div>
+    <p class="desc" id="fDesc"></p>
+    <div id="fVideo"></div>
+    <button class="add" type="button" id="fAgregar" style="align-self:flex-start;padding:12px 18px">Agregar al carrito</button>
+  </div>
+</div></dialog>
+
+<script>
+const P = {{ productos|tojson }};
+const WA = {{ T.whatsapp|tojson }};
+const $ = s => document.querySelector(s);
+const money = v => "$" + Number(v).toLocaleString("es-AR");
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const img = (id, t) => `/img/${id}/${t}`;
+let cat = "Todas"; const cart = {};
+
+function renderFilters(){
+  const cats = ["Todas", ...new Set(P.map(p => p.cat))];
+  $("#filters").innerHTML = cats.length > 2 ? cats.map(c => `<button class="chip" type="button" aria-pressed="${c===cat}" data-c="${esc(c)}">${esc(c)}</button>`).join("") : "";
+}
+function renderGrid(){
+  const lista = P.filter(p => cat === "Todas" || p.cat === cat);
+  $("#grid").innerHTML = lista.length ? lista.map(p => `
+  <article class="card">
+    <button class="ph" type="button" data-ver="${p.id}" aria-label="Ver ${esc(p.n)}">${p.fotos.length ? `<img src="${img(p.fotos[0],'c')}" alt="" loading="lazy">` : "Sin foto"}
+      <span class="cat">${esc(p.cat)}</span>${p.old && p.old > p.p ? `<span class="off">-${Math.round(100 - p.p / p.old * 100)}%</span>` : ""}${p.yt ? `<span class="vid">▶ Video</span>` : ""}</button>
+    <div class="body"><h3><button type="button" data-ver="${p.id}">${esc(p.n)}</button></h3><span class="spec">${esc(p.d)}</span>
+    <div class="row"><span class="price">${p.old && p.old > p.p ? `<s>${money(p.old)}</s>` : ""}${money(p.p)}</span><button class="add" type="button" data-add="${p.id}">Agregar</button></div></div>
+  </article>`).join("") : '<p class="empty">Todavía no hay productos cargados.</p>';
+}
+function renderCart(){
+  const ids = Object.keys(cart); let total = 0, count = 0;
+  $("#items").innerHTML = ids.length ? ids.map(id => { const p = P.find(x => x.id == id), q = cart[id]; total += p.p * q; count += q;
+    return `<div class="item"><span>${esc(p.n)}</span><strong>${money(p.p * q)}</strong>
+    <div class="qty"><button type="button" data-q="${id}" data-d="-1" aria-label="Quitar uno">−</button><span>${q}</span><button type="button" data-q="${id}" data-d="1" aria-label="Agregar uno">+</button></div></div>`; }).join("")
+    : '<p class="empty">Todavía no agregaste productos.</p>';
+  $("#total").textContent = money(total); $("#count").textContent = count;
+  const txt = "Hola! Quiero hacer este pedido:\n" + ids.map(id => { const p = P.find(x => x.id == id); return `• ${cart[id]} x ${p.n} (${money(p.p * cart[id])})`; }).join("\n") + `\nTotal: ${money(total)}`;
+  $("#waLink").href = `https://wa.me/${WA}?text=${encodeURIComponent(txt)}`;
+  $("#waLink").hidden = !ids.length || !WA;
+}
+let actual = null;
+function verFoto(i){
+  const p = actual;
+  $("#fGaleria").innerHTML = p.fotos.length ? `<img src="${img(p.fotos[i],'g')}" alt="${esc(p.n)}">` : "";
+  $("#fGaleria").hidden = !p.fotos.length;
+  [...$("#fMinis").children].forEach((b, j) => b.setAttribute("aria-current", j === i));
+}
+function abrirFicha(id){
+  const p = actual = P.find(x => x.id == id);
+  $("#fNombre").textContent = p.n;
+  $("#fPrecio").innerHTML = (p.old && p.old > p.p ? `<s>${money(p.old)}</s> ` : "") + money(p.p);
+  $("#fDesc").textContent = p.d;
+  $("#fMinis").innerHTML = p.fotos.length > 1 ? p.fotos.map((f, i) => `<button type="button" data-foto="${i}" aria-label="Foto ${i+1}"><img src="${img(f,'c')}" alt=""></button>`).join("") : "";
+  $("#fVideo").innerHTML = p.yt ? `<div class="video"><iframe src="https://www.youtube-nocookie.com/embed/${p.yt}" title="Video de ${esc(p.n)}" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe></div>` : "";
+  $("#fAgregar").dataset.add = p.id;
+  verFoto(0);
+  $("#ficha").showModal();
+}
+function cerrarFicha(){ $("#fVideo").innerHTML = ""; $("#ficha").close(); }  // corta el video al cerrar
+document.addEventListener("click", e => {
+  const t = e.target.closest("button"); if (!t) return;
+  if (t.dataset.c){ cat = t.dataset.c; renderFilters(); renderGrid(); }
+  if (t.dataset.ver) abrirFicha(t.dataset.ver);
+  if (t.dataset.foto) verFoto(+t.dataset.foto);
+  if (t.dataset.add){ cart[t.dataset.add] = (cart[t.dataset.add] || 0) + 1; renderCart(); const v = t.textContent; t.textContent = "Agregado ✓"; setTimeout(() => t.textContent = v, 900); }
+  if (t.dataset.q){ cart[t.dataset.q] += +t.dataset.d; if (cart[t.dataset.q] <= 0) delete cart[t.dataset.q]; renderCart(); }
+});
+$("#fCerrar").onclick = cerrarFicha;
+$("#ficha").addEventListener("cancel", () => { $("#fVideo").innerHTML = ""; });
+$("#ficha").addEventListener("click", e => { if (e.target.id === "ficha") cerrarFicha(); });
+$("#openCart").onclick = () => { $("#drawer").hidden = false; };
+$("#closeCart").onclick = () => { $("#drawer").hidden = true; };
+renderFilters(); renderGrid(); renderCart();
+</script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+{% extends "base_admin.html" %}
+{% block titulo %}Mi tienda{% endblock %}
+{% block cuerpo %}
+<h1>Mi tienda</h1>
+<form method="post" enctype="multipart/form-data" class="card stack">
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <div class="row2">
+    <label for="nombre">Nombre de la tienda<input id="nombre" name="nombre" value="{{ T.nombre }}"></label>
+    <label for="subtitulo">Rubro <small>Debajo del nombre</small><input id="subtitulo" name="subtitulo" value="{{ T.subtitulo }}"></label>
+  </div>
+  <label for="logo">Logo <small>Mejor cuadrado o redondo</small>
+    {% if logo %}<img src="{{ url_for('img', iid=logo, t='c') }}" alt="Logo actual" style="width:80px;height:80px;border-radius:50%;object-fit:cover">{% endif %}
+    <input id="logo" name="logo" type="file" accept="image/*"></label>
+  <div class="row2">
+    <label for="color_principal">Color principal<input id="color_principal" name="color_principal" type="color" value="{{ T.color_principal }}" style="height:46px"></label>
+    <label for="color_acento">Color de botones<input id="color_acento" name="color_acento" type="color" value="{{ T.color_acento }}" style="height:46px"></label>
+  </div>
+  <label for="portada_titulo">Título de portada<input id="portada_titulo" name="portada_titulo" value="{{ T.portada_titulo }}"></label>
+  <label for="portada_texto">Texto de portada<textarea id="portada_texto" name="portada_texto" style="min-height:70px">{{ T.portada_texto }}</textarea></label>
+  <div class="row2">
+    <label for="whatsapp">WhatsApp <small>Con código de país, ej. 5491123456789</small><input id="whatsapp" name="whatsapp" inputmode="tel" value="{{ T.whatsapp }}"></label>
+    <label for="instagram">Instagram <small>Ej. @mitienda</small><input id="instagram" name="instagram" value="{{ T.instagram }}"></label>
+  </div>
+  <div class="row2">
+    <label for="horario">Horario<input id="horario" name="horario" value="{{ T.horario }}"></label>
+    <label for="direccion">Dirección<input id="direccion" name="direccion" value="{{ T.direccion }}"></label>
+  </div>
+  <div><button class="btn acc" type="submit">Guardar</button></div>
+</form>
+{% endblock %}

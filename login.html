@@ -1,0 +1,16 @@
+{% extends "base_admin.html" %}
+{% block titulo %}Entrar{% endblock %}
+{% block cuerpo %}
+<div class="solo card">
+  <h1>Entrar al panel</h1>
+  <form method="post" class="stack">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <label for="celular">Celular <small>Con código de área, por ejemplo 1123456789</small>
+      <input id="celular" name="celular" inputmode="tel" autocomplete="tel" required></label>
+    <label for="clave">Contraseña
+      <input id="clave" name="clave" type="password" autocomplete="current-password" required></label>
+    <button class="btn" type="submit">Entrar</button>
+  </form>
+  <p class="muted">¿No tenés cuenta? <a href="{{ url_for('registro') }}">Crear cuenta</a></p>
+</div>
+{% endblock %}

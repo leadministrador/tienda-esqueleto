@@ -1,0 +1,60 @@
+{% extends "base_admin.html" %}
+{% block titulo %}{{ prod.nombre if prod else 'Nuevo producto' }}{% endblock %}
+{% block cuerpo %}
+<p><a href="{{ url_for('admin_productos') }}">← Volver a productos</a></p>
+<h1>{{ prod.nombre if prod else 'Nuevo producto' }}</h1>
+<form method="post" enctype="multipart/form-data" class="card stack" id="form">
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <label for="nombre">Nombre *
+    <input id="nombre" name="nombre" required maxlength="120" value="{{ request.form.nombre or (prod.nombre if prod else '') }}"></label>
+  <label for="descripcion">Descripción
+    <textarea id="descripcion" name="descripcion">{{ request.form.descripcion or (prod.descripcion if prod else '') }}</textarea></label>
+  <div class="row2">
+    <label for="precio">Precio * <small>Solo números, sin puntos</small>
+      <input id="precio" name="precio" inputmode="numeric" required value="{{ request.form.precio or (prod.precio if prod else '') }}"></label>
+    <label for="precio_anterior">Precio anterior <small>Opcional: aparece tachado como oferta</small>
+      <input id="precio_anterior" name="precio_anterior" inputmode="numeric" value="{{ request.form.precio_anterior or (prod.precio_anterior if prod and prod.precio_anterior else '') }}"></label>
+  </div>
+  <label for="categoria">Categoría <small>Elegí una existente o escribí una nueva</small>
+    <input id="categoria" name="categoria" list="cats" maxlength="60" value="{{ request.form.categoria or (prod.categoria if prod else '') }}">
+    <datalist id="cats">{% for c in cats %}<option value="{{ c }}">{% endfor %}</datalist></label>
+  <label for="youtube">Video de YouTube <small>Pegá el link del video (botón Compartir en YouTube)</small>
+    <input id="youtube" name="youtube" placeholder="https://youtu.be/..." value="{{ request.form.youtube or ('https://youtu.be/' ~ prod.youtube if prod and prod.youtube else '') }}"></label>
+  {% if prod and prod.youtube %}
+  <img src="https://img.youtube.com/vi/{{ prod.youtube }}/hqdefault.jpg" alt="Vista previa del video" style="max-width:240px;border-radius:8px">
+  {% endif %}
+  <label for="fotos">Agregar fotos <small>Podés elegir varias. Se guardan en alta calidad.</small>
+    <input id="fotos" name="fotos" type="file" accept="image/*" multiple></label>
+  <label class="check" for="activo"><input id="activo" name="activo" type="checkbox" {{ 'checked' if (not prod or prod.activo) }}> Visible en la tienda</label>
+  <div><button class="btn acc" type="submit" id="guardar">Guardar producto</button></div>
+</form>
+
+{% if prod %}
+<h2 style="font-size:18px;margin:24px 0 10px">Fotos ({{ fotos|length }})</h2>
+{% if fotos %}
+<div class="fotos">
+  {% for f in fotos %}
+  <figure>
+    <img src="{{ url_for('img', iid=f.id, t='c') }}" alt="" loading="lazy">
+    <figcaption>
+      {% if not loop.first %}
+      <form method="post" action="{{ url_for('admin_foto', iid=f.id, accion='primera') }}"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn lite sm">Poner primera</button></form>
+      {% else %}<span class="pill si">Principal</span>{% endif %}
+      <form method="post" action="{{ url_for('admin_foto', iid=f.id, accion='borrar') }}" onsubmit="return confirmar(this)"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn bad sm">Borrar</button></form>
+    </figcaption>
+  </figure>
+  {% endfor %}
+</div>
+{% else %}<p class="muted">Este producto no tiene fotos todavía.</p>{% endif %}
+
+<form method="post" action="{{ url_for('admin_borrar_producto', pid=prod.id) }}" style="margin-top:30px" onsubmit="return confirmar(this)">
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <button class="btn bad">Borrar este producto</button>
+</form>
+{% endif %}
+<script>
+// Confirmación en dos toques, sin ventanas emergentes
+function confirmar(f){var b=f.querySelector('button');if(b.dataset.ok)return true;b.dataset.ok=1;b.textContent='¿Seguro? Tocá de nuevo';return false}
+document.getElementById('form').addEventListener('submit',function(){var b=document.getElementById('guardar');b.disabled=true;b.textContent='Guardando…'});
+</script>
+{% endblock %}

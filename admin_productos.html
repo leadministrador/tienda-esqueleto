@@ -1,0 +1,27 @@
+{% extends "base_admin.html" %}
+{% block titulo %}Productos{% endblock %}
+{% block cuerpo %}
+<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+  <h1 style="margin:0">Productos <span class="muted" style="font-size:15px">({{ prods|length }})</span></h1>
+  <a class="btn acc" href="{{ url_for('admin_producto') }}">+ Nuevo producto</a>
+</div>
+{% if prods %}
+<div class="card tabla">
+<table>
+  <thead><tr><th></th><th>Producto</th><th>Precio</th><th>Estado</th></tr></thead>
+  <tbody>
+  {% for p in prods %}
+  <tr>
+    <td>{% if primera.get(p.id) %}<img class="mini" src="{{ url_for('img', iid=primera[p.id], t='c') }}" alt="" loading="lazy">{% else %}<div class="mini"></div>{% endif %}</td>
+    <td><a href="{{ url_for('admin_producto', pid=p.id) }}"><b>{{ p.nombre }}</b></a><br><span class="muted">{{ p.categoria or 'Sin categoría' }}{% if p.youtube %} · con video{% endif %}</span></td>
+    <td style="white-space:nowrap">{{ p.precio|pesos }}</td>
+    <td>{% if p.activo %}<span class="pill si">Visible</span>{% else %}<span class="pill">Oculto</span>{% endif %}</td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% else %}
+<div class="card"><p>Todavía no hay productos. Tocá <b>+ Nuevo producto</b> para cargar el primero.</p></div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block titulo %}Panel{% endblock %} · {{ T.nombre }}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;700&display=swap">
+<style>
+:root{--bg:#f2f3f7;--card:#fff;--fg:#1c1f30;--muted:#5d6378;--line:#d9dce6;
+  --brand:{{ T.color_principal }};--brand-ink:{{ T.color_principal|tinta }};--acc:{{ T.color_acento }};--acc-ink:{{ T.color_acento|tinta }};
+  --bad:#b42318;--ok:#1f7a45}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 "Figtree",system-ui,sans-serif}
+.top{background:var(--brand);color:var(--brand-ink)}
+.top .in{max-width:960px;margin:0 auto;padding:10px 16px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.top b{font-size:17px}
+.top nav{display:flex;gap:4px;flex-wrap:wrap;margin-left:auto}
+.top nav a{color:var(--brand-ink);text-decoration:none;padding:6px 10px;border-radius:8px;font-weight:600;font-size:14px}
+.top nav a.on,.top nav a:hover{background:rgba(255,255,255,.16)}
+main{max-width:960px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:22px;margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.stack{display:flex;flex-direction:column;gap:14px}
+label{display:flex;flex-direction:column;gap:5px;font-weight:600;font-size:14px}
+label small{font-weight:400;color:var(--muted)}
+input,textarea,select{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--fg);width:100%}
+textarea{min-height:110px;resize:vertical}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.check{flex-direction:row;align-items:center;gap:8px}
+.check input{width:auto}
+.btn{display:inline-block;border:0;border-radius:8px;padding:10px 16px;font:700 14px "Figtree",sans-serif;cursor:pointer;text-decoration:none;background:var(--brand);color:var(--brand-ink)}
+.btn.acc{background:var(--acc);color:var(--acc-ink)}
+.btn.lite{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.btn.bad{background:transparent;color:var(--bad);border:1px solid var(--bad)}
+.btn.sm{padding:6px 10px;font-size:13px}
+.flash{background:#fff7e0;border:1px solid #f0d58a;border-radius:8px;padding:10px 12px;margin-bottom:14px}
+.warn{background:#fdecea;border:1px solid #f3b4ad;color:var(--bad);border-radius:8px;padding:10px 12px;margin-bottom:14px;font-weight:600}
+.muted{color:var(--muted)}
+table{width:100%;border-collapse:collapse}
+td,th{padding:10px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+.tabla{overflow-x:auto}
+.mini{width:56px;height:56px;border-radius:8px;object-fit:cover;background:var(--bg);display:block}
+.pill{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--bg);color:var(--muted)}
+.pill.si{background:#e3f4ea;color:var(--ok)}
+.fotos{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.fotos figure{margin:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
+.fotos img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
+.fotos figcaption{display:flex;gap:4px;padding:6px;flex-wrap:wrap}
+.solo{max-width:420px;margin:40px auto}
+a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+@media(max-width:600px){.row2{grid-template-columns:1fr}.top nav{margin-left:0;width:100%}}
+</style>
+</head>
+<body>
+<div class="top"><div class="in">
+  <b>{{ T.nombre }} · Panel</b>
+  {% if yo and yo.rol in ('dueno','ayudante') %}
+  <nav>
+    <a href="{{ url_for('admin_productos') }}" class="{{ 'on' if request.path.startswith('/admin/productos') }}">Productos</a>
+    {% if yo.rol == 'dueno' %}
+    <a href="{{ url_for('admin_tienda') }}" class="{{ 'on' if request.path == '/admin/tienda' }}">Mi tienda</a>
+    <a href="{{ url_for('admin_cuentas') }}" class="{{ 'on' if request.path == '/admin/cuentas' }}">Cuentas</a>
+    {% endif %}
+    <a href="{{ url_for('tienda') }}" target="_blank">Ver tienda ↗</a>
+    <a href="{{ url_for('salir') }}">Salir</a>
+  </nav>
+  {% endif %}
+</div></div>
+<main>
+  {% if DB_LOCAL and yo %}<div class="warn">Atención: la tienda no está conectada a la base de datos externa. Lo que cargues se puede borrar.</div>{% endif %}
+  {% for m in get_flashed_messages() %}<div class="flash">{{ m }}</div>{% endfor %}
+  {% block cuerpo %}{% endblock %}
+</main>
+</body>
+</html>
