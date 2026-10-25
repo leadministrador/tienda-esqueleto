@@ -18,7 +18,9 @@ from sqlalchemy import (Boolean, Column, DateTime, ForeignKey, Integer, LargeBin
                         insert, select, update)
 from werkzeug.security import check_password_hash, generate_password_hash
 
-app = Flask(__name__)
+# Busca los .html en la carpeta "templates"; si no existe (subidos sueltos a GitHub), los busca junto a app.py
+_AQUI = os.path.dirname(os.path.abspath(__file__))
+app = Flask(__name__, template_folder="templates" if os.path.isdir(os.path.join(_AQUI, "templates")) else ".")
 app.secret_key = os.environ.get("SECRET_KEY") or "solo-para-pruebas-locales"
 app.config.update(MAX_CONTENT_LENGTH=40 * 1024 * 1024,
                   SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE="Lax")
