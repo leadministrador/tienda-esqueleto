@@ -13,12 +13,15 @@
     <td>{{ u.celular }}</td>
     <td>
       {% if u.rol == 'dueno' %}<span class="pill si">Dueño</span>
+      {% elif u.rol == 'asociado' and yo.rol != 'dueno' %}<span class="pill si">Asociado</span>
+      {% elif u.id == yo.id %}<span class="pill si">Vos</span>
       {% else %}
       <form method="post" style="display:flex;gap:6px;align-items:center">
         <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="uid" value="{{ u.id }}">
         <select name="rol" aria-label="Permiso de {{ u.nombre or u.celular }}" style="width:auto">
           <option value="cliente" {{ 'selected' if u.rol=='cliente' }}>Sin permiso</option>
           <option value="ayudante" {{ 'selected' if u.rol=='ayudante' }}>Ayudante (carga productos)</option>
+          {% if yo.rol == 'dueno' %}<option value="asociado" {{ 'selected' if u.rol=='asociado' }}>Asociado (igual que el dueño)</option>{% endif %}
         </select>
         <button class="btn sm">Guardar</button>
       </form>

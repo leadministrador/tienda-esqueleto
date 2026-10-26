@@ -44,7 +44,7 @@ usuarios = Table("usuarios", md,
     Column("celular", String(20), unique=True, nullable=False),
     Column("nombre", String(80)),
     Column("clave", String(255), nullable=False),
-    Column("rol", String(12), nullable=False, default="cliente"),  # dueno | ayudante | cliente
+    Column("rol", String(12), nullable=False, default="cliente"),  # dueno | asociado | ayudante | cliente
     Column("creado", DateTime, server_default=func.now()))
 
 productos = Table("productos", md,
@@ -193,6 +193,9 @@ def entero(s):
 app.jinja_env.filters.update(pesos=pesos, tinta=tinta)
 
 # ---------- Cuentas y seguridad ----------
+JEFES = ("dueno", "asociado")             # manejan todo: tienda, cuentas y productos
+EQUIPO = ("dueno", "asociado", "ayudante")  # pueden cargar productos
+
 def usuario_actual():
     if "yo" not in g:
         g.yo = None
@@ -317,7 +320,7 @@ def admin():
     return redirect(url_for("admin_productos"))
 
 @app.route("/admin/productos")
-@requiere("dueno", "ayudante")
+@requiere(*EQUIPO)
 def admin_productos():
     with engine.connect() as c:
         prods = c.execute(select(productos).order_by(productos.c.creado.desc(), productos.c.id.desc())).mappings().all()
@@ -334,7 +337,7 @@ def categorias_existentes():
 
 @app.route("/admin/productos/nuevo", methods=["GET", "POST"])
 @app.route("/admin/productos/<int:pid>", methods=["GET", "POST"])
-@requiere("dueno", "ayudante")
+@requiere(*EQUIPO)
 def admin_producto(pid=None):
     if request.method == "POST":
         f = request.form
@@ -382,7 +385,7 @@ def admin_producto(pid=None):
     return render_template("admin_producto.html", prod=prod, fotos=fotos, cats=categorias_existentes())
 
 @app.route("/admin/productos/<int:pid>/borrar", methods=["POST"])
-@requiere("dueno", "ayudante")
+@requiere(*EQUIPO)
 def admin_borrar_producto(pid):
     borrar_fotos(imagenes.c.producto_id == pid)
     with engine.begin() as c:
@@ -391,7 +394,7 @@ def admin_borrar_producto(pid):
     return redirect(url_for("admin_productos"))
 
 @app.route("/admin/foto/<int:iid>/<any(borrar,primera):accion>", methods=["POST"])
-@requiere("dueno", "ayudante")
+@requiere(*EQUIPO)
 def admin_foto(iid, accion):
     with engine.connect() as c:
         pid = c.execute(select(imagenes.c.producto_id).where(imagenes.c.id == iid)).scalar()
@@ -404,7 +407,7 @@ def admin_foto(iid, accion):
     return redirect(url_for("admin_producto", pid=pid))
 
 @app.route("/admin/tienda", methods=["GET", "POST"])
-@requiere("dueno")
+@requiere(*JEFES)
 def admin_tienda():
     if request.method == "POST":
         f = request.form
@@ -426,14 +429,21 @@ def admin_tienda():
     return render_template("admin_tienda.html", logo=logo_id())
 
 @app.route("/admin/cuentas", methods=["GET", "POST"])
-@requiere("dueno")
+@requiere(*JEFES)
 def admin_cuentas():
     if request.method == "POST":
+        yo = usuario_actual()
         uid, rol = entero(request.form.get("uid")), request.form.get("rol")
-        if rol in ("ayudante", "cliente") and uid != usuario_actual()["id"]:
+        # El dueño puede dar o quitar "asociado". El asociado solo maneja ayudantes y clientes.
+        puede_dar = ("asociado", "ayudante", "cliente") if yo["rol"] == "dueno" else ("ayudante", "cliente")
+        intocables = ("dueno",) if yo["rol"] == "dueno" else ("dueno", "asociado")
+        if rol in puede_dar and uid != yo["id"]:
             with engine.begin() as c:
-                c.execute(update(usuarios).where((usuarios.c.id == uid) & (usuarios.c.rol != "dueno")).values(rol=rol))
-            flash("Permiso actualizado.")
+                hecho = c.execute(update(usuarios).where((usuarios.c.id == uid) & usuarios.c.rol.notin_(intocables))
+                                  .values(rol=rol)).rowcount
+            flash("Permiso actualizado." if hecho else "No tenés permiso para cambiar esa cuenta.")
+        else:
+            flash("No tenés permiso para dar ese permiso.")
         return redirect(url_for("admin_cuentas"))
     with engine.connect() as c:
         lista = c.execute(select(usuarios.c.id, usuarios.c.nombre, usuarios.c.celular, usuarios.c.rol)

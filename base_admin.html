@@ -55,10 +55,10 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
 <body>
 <div class="top"><div class="in">
   <b>{{ T.nombre }} · Panel</b>
-  {% if yo and yo.rol in ('dueno','ayudante') %}
+  {% if yo and yo.rol in ('dueno','asociado','ayudante') %}
   <nav>
     <a href="{{ url_for('admin_productos') }}" class="{{ 'on' if request.path.startswith('/admin/productos') }}">Productos</a>
-    {% if yo.rol == 'dueno' %}
+    {% if yo.rol in ('dueno','asociado') %}
     <a href="{{ url_for('admin_tienda') }}" class="{{ 'on' if request.path == '/admin/tienda' }}">Mi tienda</a>
     <a href="{{ url_for('admin_cuentas') }}" class="{{ 'on' if request.path == '/admin/cuentas' }}">Cuentas</a>
     {% endif %}
